@@ -1,5 +1,6 @@
 
 <?php 
+session_start();
 $total="";
 $sts="";
 ?>
@@ -103,6 +104,7 @@ $sts="";
     </div>
     <input type="submit" name="submit" class="btn btn-primary" value="Submit"></input>
     <a  href="signup.php" style="position: relative;margin:30px;color:#fff;">Sign up</a>
+    <a href="index.html" style="position: relative;margin:30px;color:#fff;">Home</a>
   </form>
 </div>
 
@@ -111,9 +113,17 @@ $sts="";
 <?php
 
 if(isset($_POST['submit'])){
+
 $link = new mysqli("localhost","root",'',"poultry_db");
-$query = mysqli_query($link,"SELECT cid,`order_id`,`cname`,`order_name`,`quantity` from `order`, customer where username='$_POST[uname]' and `password`='$_POST[pswd]' and cid=id ;");
+$check=mysqli_query($link,"SELECT count(*) as count from customer where username='$_POST[uname]' and `password`='$_POST[pswd]' ");
 // $query= mysqli_query($link,"SELECT * from order");
+$var=mysqli_fetch_array($check);
+$num=$var['count'];
+if($num>0){
+$_SESSION['status']='Seccess';
+$_SESSION['user']=$_POST['uname'];
+$_SESSION['password']=$_POST['pswd'];
+$query = mysqli_query($link,"SELECT cid,`order_id`,`cname`,`order_name`,`quantity` from `order`, customer where username='$_POST[uname]' and `password`='$_POST[pswd]' and cid=id ;");
 
 echo "<center>";
 echo "<table class='table' style='background:rgba(0,0,0,0.6);color:#fff;backdrop-filter:blur(20px);' border='5'>
@@ -127,7 +137,7 @@ echo "<table class='table' style='background:rgba(0,0,0,0.6);color:#fff;backdrop
 echo "</center>";
 
 $count=0;
-
+$id=0;
 while($row=mysqli_fetch_array($query))
 {
     echo "<tr>";
@@ -151,8 +161,10 @@ echo "</div>";
 
 }
 else{
-       echo "<center>Enter correct Username and Password!</center>";
+  echo "<center>Enter correct Username and Password!</center>";
 }
+}
+
 
 
 

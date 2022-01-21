@@ -1,4 +1,14 @@
+<?php
+session_start();
+if($_SESSION['status']=='Seccess'){
+  echo "";
+}
+else{
+  header("location: userlogin.php");
+}
 
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,22 +22,26 @@
 </head>
 <body>
     <nav>
-    <h1>Explore your needs!</h1>
-    <a href="./userlogin.php">Cart 🛒</a>
+    <h1>Explore your needs! <font color=green;> <?=$_SESSION['user'];?> </font></h1>
+    <div class="options">
+    <a onclick=cart_show()  >Cart 🛒</a>
+    <a href="logout.php">Logout</a>
+    </div>
+
     </nav>
 
 <!--------------------------------------------------------------------->
 <div id="drop"> 
-<div class="container" id="user">
+<div class="container" id="user" onclick=cart_hide()>
     <h2>Enter Your Details:</h2>
   <form action="" method="post">
     <div class="form-group ">
       <label for="name">Username:</label>
-      <input type="text" class="form-control" id="name" placeholder="Enter username" name="uname" required >
+      <input  disabled type="text" class="form-control" id="name" placeholder="Enter username" value="<?php echo $_SESSION['user'];  ?>" name="uname" required >
     </div>
     <div class="form-group">
       <label for="pwd">Password:</label>
-      <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd" required >
+      <input disabled  type="password" class="form-control" id="pwd" placeholder="Enter password" value="<?php echo $_SESSION['password']; ?>" name="pswd" required >
     </div>
     <br>
   <h2>Buy the things you want!</h2>
@@ -115,32 +129,54 @@ $pass="";
 $amt="";
 $avail="";
 $pr=mysqli_query($link,"SELECT * from `price`");
+
 while($row=mysqli_fetch_array($pr)){
     $chik=$row['chicken'];
     $mt=$row['meal'];
     $sl=$row['sliced'];
     $eg=$row['egg'];
 }
-$dec=mysqli_query($link,"SELECT * from `type` where `item_id`=1");
-while($row=mysqli_fetch_array($dec)){
-    $avch=$row['available'];
-}
-$dec1=mysqli_query($link,"SELECT * from `type` where `item_id`=2");
-while($row=mysqli_fetch_array($dec1)){
-    $avsl=$row['available'];
-}
-$dec2=mysqli_query($link,"SELECT * from `type` where `item_id`=3 ");
-while($row=mysqli_fetch_array($dec2)){
-    $avmt=$row['available'];
-}
-$dec3=mysqli_query($link,"SELECT * from `type` where `item_id`=4");
-while($row=mysqli_fetch_array($dec3)){
-    $avegg=$row['available'];
-}
+
+
+
+$qry1=mysqli_query($link," SELECT `available` FROM `type` WHERE `item_name`='chicken';");
+$qry2=mysqli_query($link," SELECT `available` FROM `type` WHERE `item_name`='meat';");
+$qry3=mysqli_query($link," SELECT `available` FROM `type` WHERE `item_name`='sliced';");
+$qry4=mysqli_query($link," SELECT `available` FROM `type` WHERE `item_name`='egg';");
+
+while($row=mysqli_fetch_array($qry1)){
+    if($row['available']>=0){
+      $chick=$row['available'];
+    }else{
+      $chick=0;
+    }
+  }
+  while($row=mysqli_fetch_array($qry2)){
+    if($row['available']>=0){
+      $meat=$row['available'];
+    }else{
+      $meat=0;
+    }
+  }
+  while($row=mysqli_fetch_array($qry3)){
+    if($row['available']>=0){
+      $sliced=$row['available'];
+    }else{
+      $sliced=0;
+    }
+  
+  }
+  while($row=mysqli_fetch_array($qry4)){
+    if($row['available']>=0){
+      $egg=$row['available'];
+    }else{
+      $egg=0;
+    }
+  }
 if(isset($_POST['order'])){
   
     
-    $query= mysqli_query($link, "SELECT * from `customer` where `username`='$_POST[uname]' and `password`='$_POST[pswd]' ");
+    $query= mysqli_query($link, "SELECT * from `customer` where `username`='$_SESSION[user]' and `password`='$_SESSION[password]' ");
 
     while($row=mysqli_fetch_array($query)){
         $uname=$row['username'];
@@ -148,34 +184,29 @@ if(isset($_POST['order'])){
         $cid=$row['id'];
 
     }
- 
-    if($uname!=$_POST['uname'] && $pass!=$_POST['pswd']){ 
-         echo "<script>alert('Wrong entry!')</script>";
-    }
 
-    else{
                $qty=$_POST['qty'];
                if($_POST['type']== 'Chicken'){
                  $amt=$chik * $qty;
-                 $avail=$avch - $qty;
+                 $avail=$chick - $qty;
                  $upd= mysqli_query($link,"UPDATE `type` SET `available`='$avail' where `item_id`=1 ");
                }
                if($_POST['type'] == 'Sliced'){
                  $amt=$sl * $qty;
-                 $avail=$avsl - $qty;
+                 $avail=$sliced - $qty;
                  $upd= mysqli_query($link,"UPDATE `type` SET `available`='$avail' where `item_id`=2 ");
                }
                if($_POST['type']== 'Meat'){
                  $amt=$mt * $qty;
-                 $avail= $avmt - $qty;
+                 $avail= $meat - $qty;
                  $upd= mysqli_query($link,"UPDATE `type` SET `available`='$avail' where `item_id`=3 ");
                }
                if($_POST['type']== 'Egg'){
                  $amt=$eg * $qty;
-                 $avail=$avegg - $qty;
+                 $avail=$egg - $qty;
                  $upd= mysqli_query($link,"UPDATE `type` SET `available`='$avail' where `item_id`=4 ");
                }
-               echo "<b>". $amt . "</b>";
+               echo "<b>Total amount = ". $amt . "</b>";
     $ins=mysqli_query($link, "INSERT INTO `order`(`order_id`, `cid`, `quantity`, `address`,`order_name`) 
     VALUES (NULL,'$cid','$qty','$_POST[add]','$_POST[type]')");
     $pri=mysqli_query($link,"INSERT INTO `payment`(`id`, `cname`, `type`, `quantity`, `amount`) 
@@ -186,11 +217,9 @@ if(isset($_POST['order'])){
           window.location.href="order.php";
       </script>
       <?php
-    }
   
 
 }
-// $query= mysqli_query($link,"UPDATE ")
    
 ?>
     <!--------------------------------DROPDOWN---------------------------------->
@@ -202,30 +231,30 @@ if(isset($_POST['order'])){
 ?>
 </p>
     <br><br>
-    <div class="container" ondblclick="hidedrag()">
+    <div class="container"  onclick=cart_hide() ondblclick="hidedrag()">
         <div class="imgholder" >
-       <img onclick="dragdown()" src="./images/meatdec.jpg" alt="Meat" />
+       <img onclick="dragdown()" src="./images/meatdec.jpg" alt="Meat" >
         <h3>Meat</h3>
         <h4><?php  echo "₹" . $mt ; ?></h4>
-        <h5>Available: <?php echo $avmt;?></h5>
+        <h5>Available: <?php echo $meat;?></h5>
         </div>
         <div class="imgholder">
-       <img onclick="dragdown()"  src="./images/egg.jpg" alt="Egg"/>
+       <img onclick="dragdown()"  src="./images/egg.jpg" alt="Egg">
         <h3>Egg</h3>
         <h4><?php  echo "₹" . $eg ; ?></h4>
-        <h5>Available: <?php echo $avegg;?></h5>
+        <h5>Available: <?php echo $egg;?></h5>
         </div>
         <div class="imgholder">
-       <img onclick="dragdown()" src="./images/slice.jpg" alt="Sliced"/>
+       <img onclick="dragdown()" src="./images/slice.jpg" alt="Sliced">
         <h3>Sliced</h3>
         <h4><?php  echo "₹" . $sl ; ?></h4>
-        <h5>Available: <?php echo $avsl;?></h5>
+        <h5>Available: <?php echo $sliced;?></h5>
         </div>
         <div class="imgholder">
-      <img onclick="dragdown()" src="./images/chicken.jpg" alt="Chicken"/>
+      <img onclick="dragdown()" src="./images/chicken.jpg" alt="Chicken">
         <h3>Chicken</h3>
         <h4><?php  echo "₹" . $chik ; ?></h4>
-        <h5>Available: <?php echo $avch;?></h5>
+        <h5>Available: <?php echo $chick;?></h5>
         </div>
     </div>
     <script>
@@ -255,10 +284,12 @@ if(isset($_POST['order'])){
         .container{
             display: flex;
             width: 100%;
-            height: 100vh;
-            justify-content: space-between;
+            max-height: 100vh;
+            height: auto;
+            justify-content: center;
             align-items: center;
-            overflow-y: scroll;
+            padding: 2% 2%;
+            
         }
         h1{
             text-shadow: 0 4px 4px rgba(255,255,255,0.4);
@@ -270,6 +301,7 @@ if(isset($_POST['order'])){
             align-items: center;
             justify-content: center;
             flex-direction: column;
+      
         }
         .imgholder h3{
             font-size: 25px;
@@ -301,12 +333,17 @@ if(isset($_POST['order'])){
             width: 100%;
             margin: 0 auto;
         }
-        nav a{
+        .options{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        a{
             text-decoration: none;
             font-size: 20px;
             font-weight: 600;
             color: #fff;
-            margin-right: 5%;
+            margin: 0 20px;
         }
         nav h1{
             margin-left: 5%;
@@ -329,6 +366,87 @@ if(isset($_POST['order'])){
                 z-index: 100;
             }
         }
+        ::-webkit-scrollbar{
+          display: none;
+        }
+
+        .cart_container{
+          display: none;
+          flex-direction: column;
+          z-index: 100;
+          position: absolute;
+          top: 10%;
+          right: 3%;
+          background: linear-gradient(rgba(255,255,255,0.5),rgba(255,255,255,0.2));
+          backdrop-filter: blur(10px);
+          width: 40%;
+          height: 100%;
+          padding: 15px;
+          border-radius: 20px;
+          transition: .4s;
+          max-height: 70vh;
+          overflow: scroll;
+        }
     </style>
+
+<div class="cart_container" id="cart">
+
+<?php
+
+
+$link = new mysqli("localhost","root",'',"poultry_db");
+
+$query = mysqli_query($link,"SELECT cid,`order_id`,`cname`,`order_name`,`quantity` from `order`, customer where  username='$_SESSION[user]' and `password`='$_SESSION[password]'  and cid=id ;");
+
+echo "<center>";
+echo "<table class='table' style='background:rgba(0,0,0,0.6);color:#fff;backdrop-filter:blur(20px);' border='5'>
+
+<tr>
+<th>Order ID</th>
+<th>Customer name</th>  
+<th>Type</th>
+<th>Quantity</th> 
+</tr>";
+echo "</center>";
+
+$count=0;
+$id=0;
+while($row=mysqli_fetch_array($query))
+{
+    echo "<tr>";
+    $id=$row['cid'];
+    echo "<td>"; echo $row["order_id"]; echo "</td>";
+    echo "<td>"; echo $row["cname"]; echo "</td>";
+    echo "<td>"; echo $row["order_name"]; echo "</td>";
+    echo "<td>"; echo $row["quantity"]; echo "</td>";
+    echo "</tr>";
+    $count= $count+1;
+}
+$status= mysqli_query($link,"SELECT sum(amount) as `amount`,`status` from `payment` where `id`='$id'; ");
+while($row=mysqli_fetch_array($status)){
+$total=$row['amount'];
+$sts=$row['status'];
+}
+echo "<div class='status'>";
+echo "<h1>Total: ₹$total </h1>";
+echo "<h2>$sts</h2>";
+echo "</div>";
+
+?>
+</div>   
+<script>
+    function cart_show(){
+            document.getElementById('cart').style.display='flex';
+            document.getElementById('cart').style.right='0';
+            document.getElementById('cart').style.transition='.5s';
+        }
+        function cart_hide(){
+            document.getElementById('cart').style.display='none';
+            document.getElementById('cart').style.right='0';
+            document.getElementById('cart').style.transition='.5s';
+        }
+
+</script>
+ 
 </body>
 </html>
