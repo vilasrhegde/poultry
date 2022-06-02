@@ -1,5 +1,6 @@
 <?php
 
+include('dbcon.php');
 
 
 
@@ -19,7 +20,6 @@
 <body>
     <h1>Welcome back : )</h1>
 <?php
-$link = new mysqli("localhost","root",'',"poultry_db");
 
 $query = mysqli_query($link,"SELECT * from `customer` where ");
 

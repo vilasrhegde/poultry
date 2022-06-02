@@ -1,22 +1,10 @@
 <?php
-$link = new mysqli("localhost","root",'',"poultry_db");
+include('dbcon.php');
 date_default_timezone_set('Asia/Kolkata'); 
 $curr_date= date("Y-m-d H:i:s"); // time in India
 
 $id =$_GET["id"];
-$name="";
-$amount="";
-$staus="";
-$type="";
-$res = mysqli_query($link, "SELECT id,cname,sum(amount) as amount,`status`,type from payment where `id`=$id");
 
-while($row=mysqli_fetch_array($res))
-{
-    $name=$row['cname'];
-    $amount=$row['amount'];
-    $staus=$row['status'];
-    $type=$row['type'];
-}
 
 ?>
 
@@ -26,41 +14,93 @@ while($row=mysqli_fetch_array($res))
   <title>Edit</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
 </head>
 <body>
+<div class="container">
+<a id="exit" href="admin.php">Exit</a>
+<br><br>
+<h1>Payment history </h1>
+<?php
 
-<div class="form-group">
-    <form action="" method="post">
-        <h1 style="text-align: center;font-weight:900;">Edit entries:</h1>
-      <br>
-   
-      <div class="col-sm-12">
-      <label for="firstname">Name:</label>
-      <input disabled type="text" class="form-control" id="firstname" placeholder="Enter First name" name="firstname" value="<?php echo
-      $name ?>">
-      </div>  <br>
-      <div class="col-sm-12">
-      <label for="type">Type:</label>
-      <input required type="text" class="form-control" id="type" placeholder="Enter Order Type" name="type" value="<?php echo
-      $type ?>">
-      </div>  <br>
-      <div class="col-sm-12">
-      <label for="amount">Amount:</label>
-      <input required type="number" class="form-control" id="amount" placeholder="Enter Amount" name="amount" value="<?php echo
-      $amount ?>">
-      </div>  <br>
-      <div class="col-sm-12">
-      <label for="status">Status:</label>
-      <input required type="text" class="form-control" id="status" placeholder="Enter Status" name="status" value="<?php echo
-      $staus ?>"><br>
-      </div>  <br>
+$sql = mysqli_query($link,"SELECT * from payment where id='$id'");
+$count=0;
+if(mysqli_num_rows($sql)>0){
+echo "<table class='table  container' border='5'>
 
-      <input type="submit" name="update" class="btn btn-block btn-warning" value="Update">
-    </form>
+<tr>
+<th>#</th>
+<th>Payment ID</th>  
+<th>Name</th>
+<th>Type</th>
+<th>Quantity</th> 
+<th>Amount</th> 
+<th>Status</th> 
+<th>Delete</th>
+</tr>";
+
+while($row=mysqli_fetch_array($sql)){
+  $count++;
+
+  echo "<tr>";
+    echo "<td>"; echo $count; echo "</td>";
+    echo "<td>"; echo $row["pid"]; echo "</td>";
+    echo "<td>"; echo $row["cname"]; echo "</td>";
+    echo "<td>"; echo $row["type"]; echo "</td>";
+    echo "<td>"; echo $row["quantity"]; echo "</td>";
+    echo "<td>"; echo $row["amount"]; echo "</td>";
+
+
+    echo "<td>"; ?>
+  <a href="set_payment.php?pid=<?php echo $row["pid"]; ?>&id=<?=$id;?>">
+    <button type="text/javascript" class="btn 
+    <?php if($row['status']=="Paid"){
+      echo "btn-success";
+    }   
+    else{
+      echo 'btn-warning';
+    }
+    ?>">
+    <?=$row['status'];?></button>
+  </a> 
+    <?php echo "</td>";
+
+echo "<td>"; ?>
+<a href="del_payment.php?pid=<?php echo $row["pid"]; ?>&id=<?=$id;?>">
+  <button type="text/javascript" class="btn btn-danger">Delete</button>
+</a> 
+  <?php echo "</td>";
+
+
+
+    echo "</tr>";
+
+
+
+}
+$sqll = mysqli_query($link,"SELECT sum(amount) as due from payment where id='$id' and `status`='Not Paid' ");
+$s=mysqli_fetch_array($sqll);
+
+?>
+<h3>Total Dues = ₹<?=$s['due']?>.00</h3>
+<?php
+}//check rows
+else{
+  ?>
+<h3>No records found for this user.</h3>
+<?php
+}
+?>
 </div>
+
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
 *{
@@ -69,22 +109,28 @@ while($row=mysqli_fetch_array($res))
   box-sizing: border-box;
   font-family: 'Poppins',sans-serif;
 }
+table{
+  box-shadow: 0 0 6px 2px #999;
+}
+h1{
+  text-shadow: 0 5px 5px #777;
+}
+#exit{
+  text-decoration: none;
+  color: #fff;
+  background: #000;
+  padding: 5px 10px;
+  border-radius: 5px;
+  position: absolute;
+  right: 2%;
+  top: 5%;
+}
 </style>
 </body>
-<?php
-
-if(isset($_POST["update"]))
-{
-    
-     $update=mysqli_query($link,"UPDATE `payment` set `status` = '$_POST[status]', `amount`= '$_POST[amount]' where `id`='$id' and `type`='$_POST[type]' ");
-?>
-<script type="text/javascript">
-window.location="admin.php";
-
-</script>
 
 <?php
-}
+  
+
 
 ?>
 </html>

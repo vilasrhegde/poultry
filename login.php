@@ -1,28 +1,4 @@
-<?php
 
-
-$uname='admin';
-$pass='1234';
-
-if(isset($_POST['submit'])){
-    if($_POST['name']===$uname && $_POST['pswd']===$pass){
-        header("Location: admin.php");
-    }
-    else{
-        echo "<b>Wrong entry!</b>";
-    }
-}
-
-
-
-
-
-
-
-
-
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,19 +13,52 @@ if(isset($_POST['submit'])){
 <body>
 
 <div class="container">
-  <h2>Enter Admin Details:</h2>
   <form action="" method="post">
-    <div class="form-group">
+  <div class="form-group col-sm-4">
+  <h2>Enter Admin Details:</h2>
+    </div>
+    <div class="form-group col-sm-4">
       <label for="name">Name:</label>
       <input type="text" class="form-control" id="name" placeholder="Enter admin name" name="name">
     </div>
-    <div class="form-group">
+    <div class="form-group col-sm-4">
       <label for="pwd">Password:</label>
-      <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd">
+      <input type="password" class="form-control" id="pwd" placeholder="Enter admin password" name="pswd">
     </div>
-    <input type="submit" name="submit" class="btn btn-primary" value="Submit"></input>
+    <div class="form-group col-sm-4">
+    <input type="submit" name="submit" class="btn btn-primary" value="Submit"></input>      
+  </div>
   </form>
-</div>
+  <?php
 
+
+$uname='admin';
+$pass='admin';
+
+if(isset($_POST['submit'])){
+    if($_POST['name']===$uname && $_POST['pswd']===$pass){
+        header("Location: admin.php");
+    }
+    else{
+        echo "<b>Wrong entry!</b>";
+    }
+}
+
+
+?>
+</div>
+<style>
+  *{
+    margin: 0;
+    padding: 0;
+  }
+  body{
+    background: #555;
+    display: flex;
+    justify-content: center;
+    align-items: center ;
+    color: #fff;
+  }
+</style>
 </body>
 </html>
